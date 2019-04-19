@@ -15,23 +15,15 @@ import (
 )
 
 func main() {
-	// Initialize our api and return a pointer to our router for http.ListenAndServe
-	// and a pointer to our db to defer its closing when main() is finished
 	router, db := initializeAPI()
 	defer db.Close()
 
-	// Listen on port 4000 and if there's an error log it and exit
 	log.Fatal(http.ListenAndServe(":4000", router))
 }
 
 func initializeAPI() (*chi.Mux, *sqlite.Db) {
-	// Create a new router
-	router := chi.NewRouter()
 
-	// Create a new connection to our pg database
-	//db, err := postgres.New(
-	//	postgres.ConnString("localhost", 5432, "bradford", "go_graphql_db"),
-	//)
+	router := chi.NewRouter()
 
 	db, err := sqlite.New("go_graphql_db")
 
@@ -55,7 +47,6 @@ func initializeAPI() (*chi.Mux, *sqlite.Db) {
 		GqlSchema: &sc,
 	}
 
-	// Add some middleware to our router
 	router.Use(
 		render.SetContentType(render.ContentTypeJSON), // set content-type headers as application/json
 		middleware.Logger,          // log api request calls

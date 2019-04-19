@@ -4,9 +4,17 @@ import (
 	"database/sql"
 	"fmt"
 
-	// sqlite3 driver
 	_ "github.com/mattn/go-sqlite3"
 )
+
+// User shape
+type User struct {
+	ID         int
+	Name       string
+	Age        int
+	Profession string
+	Friendly   bool
+}
 
 // Db is our database struct used for interacting with the database
 type Db struct {
@@ -21,7 +29,6 @@ func New(connString string) (*Db, error) {
 		return nil, err
 	}
 
-	// Check that our connection is good
 	err = db.Ping()
 	if err != nil {
 		return nil, err
@@ -30,40 +37,22 @@ func New(connString string) (*Db, error) {
 	return &Db{db}, nil
 }
 
-// ConnString returns a connection string based on the parameters it's given
-// This would normally also contain the password, however we're not using one
-//func ConnString(dbName string) string {
-//	return dbName
-//}
-
-// User shape
-type User struct {
-	ID         int
-	Name       string
-	Age        int
-	Profession string
-	Friendly   bool
-}
-
 // GetUsersByName is called within our user query for graphql
 func (d *Db) GetUsersByName(name string) []User {
-	// Prepare query, takes a name argument, protects from sql injection
+
+	var r User
+	users := []User{}
+
 	stmt, err := d.Prepare("SELECT * FROM users WHERE name=$1")
 	if err != nil {
 		fmt.Println("GetUserByName Preperation Err: ", err)
 	}
 
-	// Make query with our stmt, passing in name argument
 	rows, err := stmt.Query(name)
 	if err != nil {
 		fmt.Println("GetUserByName Query Err: ", err)
 	}
 
-	// Create User struct for holding each row's data
-	var r User
-	// Create slice of Users for our response
-	users := []User{}
-	// Copy the columns from row into the values pointed at by r (User)
 	for rows.Next() {
 		err = rows.Scan(
 			&r.ID,
